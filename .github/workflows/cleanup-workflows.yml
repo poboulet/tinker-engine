@@ -1,0 +1,94 @@
+name: Cleanup Workflow Runs
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+    inputs:
+      max_age_days:
+        description: "Maximum age of workflow runs to keep (days)"
+        required: false
+        default: "30"
+      status:
+        description: "Status of the workflow runs to cleanup"
+        required: false
+        default: "completed"
+      branch:
+        description: "Specific branch to cleanup runs from"
+        required: false
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Parameters
+        id: setup
+        run: |
+          echo "max_age_days=${{ github.event.inputs.max_age_days || '30' }}" >> $GITHUB_ENV
+          echo "status=${{ github.event.inputs.status || 'completed' }}" >> $GITHUB_ENV
+          echo "branch=${{ github.event.inputs.branch }}" >> $GITHUB_ENV
+
+      - name: Fetch Workflow Runs
+        id: fetch_runs
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const { owner, repo } = context.repo;
+            const status = process.env.status;
+            const runs = await github.rest.actions.listWorkflowRunsForRepo({
+              owner,
+              repo,
+              status: status,
+              per_page: 100
+            });
+            return runs.data.workflow_runs;
+
+      - name: Filter runs to delete
+        id: filter_runs
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const { owner, repo } = context.repo;
+            const maxAgeInDays = parseInt(process.env.max_age_days, 10);
+            const branch = process.env.branch;
+            const now = new Date();
+            const runs = ${{ steps.fetch_runs.outputs.result }};
+
+            const runsToDelete = runs.filter(run => {
+              const runDate = new Date(run.created_at);
+              const ageDays = (now - runDate) / (1000 * 60 * 60 * 24);
+              const isOld = ageDays > maxAgeInDays;
+              const isOnBranch = branch ? run.head_branch === branch : true;
+              return isOld && isOnBranch;
+            });
+
+            const branchInfo = branch ? ` on branch ${branch}` : '';
+
+            if (runsToDelete.length == 0) { 
+              console.log(`No runs older than ${maxAgeInDays} days with status ${process.env.status}${branchInfo} found.`);
+              return;
+            }
+
+            console.log(`Found ${runsToDelete.length} runs older than ${maxAgeInDays} days with status ${process.env.status}${branchInfo}.`);
+            core.setOutput("runs_to_delete", JSON.stringify(runsToDelete));
+            core.setOutput("runs_count", runsToDelete.length);
+
+      - name: Delete filtered runs
+        if: steps.filter_runs.outputs.runs_count > 0
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const { owner, repo } = context.repo;
+            const runsToDelete = JSON.parse('${{ steps.filter_runs.outputs.runs_to_delete }}');
+
+            for (const run of runsToDelete) {
+              console.log(`Deleting run ${run.id} created at ${run.created_at}.`);
+              await github.rest.actions.deleteWorkflowRun({
+                owner,
+                repo,
+                run_id: run.id
+              });
+            }

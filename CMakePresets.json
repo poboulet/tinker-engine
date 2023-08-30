@@ -1,0 +1,111 @@
+{
+    "version": 5,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 23,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "release",
+            "displayName": "Release",
+            "description": "Create release build using clang generator",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/${presetName}",
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_CXX_CLANG_TIDY": "clang-tidy;--warnings-as-errors;",
+                "CMAKE_CXX_CPPCHECK": "cppcheck;--enable=all;--suppress=missingIncludeSystem;--suppress=unmatchedSuppression;--suppress=unusedFunction;--error-exitcode=1;",
+                "BUILD_TESTS": "ON"
+            },
+            "toolchainFile": "${sourceDir}/vcpkg/scripts/buildsystems/vcpkg.cmake",
+            "hidden": true
+        },
+        {
+            "name": "debug",
+            "displayName": "Debug",
+            "description": "Create debug build using clang generator",
+            "inherits": [
+                "release"
+            ],
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            },
+            "hidden": true
+        },
+        {
+            "name": "release-unix-x64",
+            "inherits": "release",
+            "hidden": false,
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "/usr/bin/clang",
+                "CMAKE_CXX_COMPILER": "/usr/bin/clang++",
+                "CMAKE_OSX_ARCHITECTURES": "x86_64"
+            }
+        },
+        {
+            "name": "release-windows-x64",
+            "inherits": "release",
+            "hidden": false,
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "clang.exe",
+                "CMAKE_CXX_COMPILER": "clang++.exe"
+            }
+        },
+        {
+            "name": "debug-unix-x64",
+            "inherits": "debug",
+            "hidden": false
+        },
+        {
+            "name": "debug-windows-x64",
+            "inherits": "debug",
+            "hidden": false
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "release-unix-x64",
+            "configurePreset": "release-unix-x64"
+        },
+        {
+            "name": "release-windows-x64",
+            "configurePreset": "release-windows-x64"
+        },
+        {
+            "name": "debug-unix-x64",
+            "configurePreset": "debug-unix-x64"
+        },
+        {
+            "name": "debug-windows-x64",
+            "configurePreset": "debug-windows-x64"
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "debug-unix-x64",
+            "configurePreset": "debug-unix-x64",
+            "displayName": "Debug Unix x64",
+            "description": "Run tests for debug configuration on Unix x64"
+        },
+        {
+            "name": "debug-windows-x64",
+            "configurePreset": "debug-windows-x64",
+            "displayName": "Debug Windows x64",
+            "description": "Run tests for debug configuration on Windows x64"
+        },
+        {
+            "name": "release-unix-x64",
+            "configurePreset": "release-unix-x64",
+            "displayName": "Release Unix x64",
+            "description": "Run tests for release configuration on Unix x64"
+        },
+        {
+            "name": "release-windows-x64",
+            "configurePreset": "release-windows-x64",
+            "displayName": "Release Windows x64",
+            "description": "Run tests for release configuration on Windows x64"
+        }
+    ]
+}
