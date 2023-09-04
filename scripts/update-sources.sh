@@ -1,15 +1,40 @@
 #!/bin/bash
 
-CMAKE_FILE="./CMakeLists.txt"
+ROOT_FOLDER="$(dirname "$(readlink -f "$0")")/.."
+cd $ROOT_FOLDER
 
-export AUTO_UPDATE_CPP_FILES=$(find ./src -name "*.cpp" | sed 's/.*/    &/')
+while [ $# -gt 0 ]
+do
+     case "$1" in
+        -h|--help)
+            echo "Usage: $0 [OPTIONS]"
+            echo "Options:"
+            echo "  -d, --directory            Specify the target folder that contains the CMake file"
+            echo "  -h, --help                 Display this help message"
+            exit 0
+            ;;
+        -d|--directory) Directory="$2"; shift;;
+        *) echo "Unknown parameter passed: $1"; exit 1 ;;
+        esac
+     shift;
+done
 
-# Replace the SOURCES variable in the CMakeLists.txt file
-perl -i -pe 'BEGIN{undef $/;} s/set\(SOURCES.*?\)/set(SOURCES \n$ENV{AUTO_UPDATE_CPP_FILES}\n)/sm' "$CMAKE_FILE"
+if [ "$Directory" == "" ]; then
+    echo "No target directory specified. Defaulting to ./"
+    export Directory=.
+fi
+
+export CMakeFilePath=./CMakeLists.txt
+
+pushd $Directory
+export AUTO_UPDATE_CPP_FILES=$(find . -name "*.cpp" | sed 's/.*/    &/')
+perl -i -pe 'BEGIN{undef $/;} s/set\(SOURCES.*?\)/set(SOURCES \n$ENV{AUTO_UPDATE_CPP_FILES}\n)/sm' $CMakeFilePath
 
 # Check if the replace was successful
 if [ $? -eq 0 ]; then
-    echo -e "Updated CMake sources ($CMAKE_FILE) with the following files:\n$AUTO_UPDATE_CPP_FILES"
+    echo -e "Updated CMake sources ($CMakeFilePath) with the following files:\n$AUTO_UPDATE_CPP_FILES \n"
 else
-    echo "$CMAKE_FILE update failed."
+    echo "$CMakeFilePath update failed. \n"
 fi
+
+popd

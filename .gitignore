@@ -31,4 +31,7 @@
 *.out
 *.app
 
+# Build files
 /build
+/Testing
+CMakeUserPresets.json
