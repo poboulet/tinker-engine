@@ -2,6 +2,9 @@
 
 set(SOURCES 
     ./window.cpp
+    ./engine_pipeline.cpp
+    ./file_reader.cpp
+    ./engine_device.cpp
     ./engine_app.cpp
     ./main.cpp
 )
