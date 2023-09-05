@@ -3,7 +3,7 @@
         "commands": [
             {
                 "match": "(\\.h|\\.cpp)$",
-                "cmd": "./scripts/build.sh"
+                "cmd": "./scripts/build.sh && ./scripts/build.sh debug"
             },
         ]
     },
@@ -12,7 +12,14 @@
     "C_Cpp.errorSquiggles": "enabled",
     "files.associations": {
         "iosfwd": "cpp",
-        "vector": "cpp"
+        "vector": "cpp",
+        "string": "cpp",
+        "cstring": "cpp",
+        "stdexcept": "cpp",
+        "__split_buffer": "cpp",
+        "deque": "cpp",
+        "list": "cpp"
     },
     "C_Cpp.default.intelliSenseMode": "",
+    "C_Cpp.clang_format_fallbackStyle": "Google",
 }

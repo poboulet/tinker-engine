@@ -11,14 +11,15 @@ namespace engine
     public:
         Window(int width, int height, std::string windowName);
         ~Window();
-        bool shouldClose();
 
         Window(const Window &) = delete;
         Window &operator=(const Window &) = delete;
 
+        bool shouldClose();
+        void createWindowSurface(VkInstance instance, VkSurfaceKHR *surface);
+
     private:
-        void
-        initWindow();
+        void initWindow();
         const int width;
         const int height;
         std::string windowName;

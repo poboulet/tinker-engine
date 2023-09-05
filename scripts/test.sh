@@ -1,4 +1,4 @@
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 cd "$SCRIPT_DIR/.."
 
-ctest --test-dir ./build
+ctest --test-dir ./build/release --output-on-failure

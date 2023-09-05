@@ -1,12 +1,8 @@
 #include "engine_app.hpp"
 
-namespace engine
+namespace engine {
+void EngineApp::run()
 {
-    void EngineApp::run()
-    {
-        while (!Window.shouldClose())
-        {
-            glfwPollEvents();
-        }
-    }
+    while (!Window.shouldClose()) { glfwPollEvents(); }
 }
+}// namespace engine
