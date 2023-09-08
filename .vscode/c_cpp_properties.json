@@ -1,19 +1,22 @@
 {
     "configurations": [
         {
-            "name": "Mac",
-            "includePath": [
-                "~/.conan2/**",
-                "${workspaceFolder}/include",
-                "${VULKAN_SDK}/include"
-            ],
-            "defines": [],
+            "name": "Mac Release",
             "macFrameworkPath": [
                 "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks"
             ],
-            "compilerPath": "/usr/bin/clang",
-            "cStandard": "c17",
-            "intelliSenseMode": "macos-clang-x64"
+            "cStandard": "c23",
+            "intelliSenseMode": "macos-clang-x64",
+            "compileCommands": "${workspaceFolder}/build/release/compile_commands.json",
+        },
+        {
+            "name": "Mac Debug",
+            "macFrameworkPath": [
+                "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks"
+            ],
+            "cStandard": "c23",
+            "intelliSenseMode": "macos-clang-x64",
+            "compileCommands": "${workspaceFolder}/build/debug/compile_commands.json"
         }
     ],
     "version": 4

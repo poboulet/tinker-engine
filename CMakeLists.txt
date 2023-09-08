@@ -2,41 +2,51 @@ cmake_minimum_required(VERSION 3.10)
 
 project(TinkerEngine)
 
+# Compiler settings
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-# Use C++20 standard
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-if (DEFINED VULKAN_SDK_PATH)
-  set(Vulkan_INCLUDE_DIRS "${VULKAN_SDK_PATH}/Include") # 1.1 Make sure this include path is correct
-  set(Vulkan_LIBRARIES "${VULKAN_SDK_PATH}/Lib") # 1.2 Make sure lib path is correct
-  set(Vulkan_FOUND "True")
+MESSAGE(STATUS "Using toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
+
+# Find Vulkan libraries
+if(DEFINED VULKAN_SDK_PATH)
+    set(Vulkan_INCLUDE_DIRS "${VULKAN_SDK_PATH}/Include") 
+    set(Vulkan_LIBRARIES "${VULKAN_SDK_PATH}/Lib")
+    set(Vulkan_FOUND TRUE)
 else()
-  find_package(Vulkan REQUIRED) # throws error if could not find Vulkan
-  message(STATUS "Found Vulkan: $ENV{VULKAN_SDK}")
-endif()
-if (NOT Vulkan_FOUND)
-	message(FATAL_ERROR "Could not find Vulkan library!")
-else()
-	message(STATUS "Using vulkan lib at: ${Vulkan_LIBRARIES}")
+    find_package(Vulkan REQUIRED)
+    message(STATUS "Found Vulkan: $ENV{VULKAN_SDK}")
 endif()
 
+if(NOT Vulkan_FOUND)
+    message(FATAL_ERROR "Could not find Vulkan library!")
+else()
+    message(STATUS "Using Vulkan lib at: ${Vulkan_LIBRARIES}")
+endif()
+
+# Find GLFW
 find_package(glfw3 3.3 REQUIRED)
 
+# Link libraries
 add_library(project_libs INTERFACE)
 target_link_libraries(project_libs INTERFACE Vulkan::Vulkan glfw)
 
-include(CTest)
+# Lint target
+add_custom_target(lint
+    COMMAND ./scripts/lint.sh -p ${CMAKE_BINARY_DIR}
+    COMMENT "Running lint script..."
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
+# Tests
 enable_testing()
 
-# Add the main app and the tests directories
 add_subdirectory(src)
 
-# option(BUILD_TESTS "Build the tests" ON)
+# Run cmake with -DBUILD_TESTS=ON to build tests
 if(BUILD_TESTS)
+    include (CTest)
     add_subdirectory(test)
 endif()
-
-

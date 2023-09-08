@@ -1,0 +1,89 @@
+#!/bin/bash
+
+# Function to return a list of available scripts
+function list_scripts() {
+    local available_scripts=()
+    for script in ./scripts/*.sh; do
+        # Extract just the script's name without the path and extension
+        script_name=$(basename "$script" .sh)
+        available_scripts+=("$script_name")
+    done
+    echo "${available_scripts[@]}"
+}
+
+function list_scripts_with_descriptions() {
+    local scripts_with_descriptions=()
+    local max_length=0
+
+    # Determine the maximum script name length
+    for script in ./scripts/*.sh; do
+        script_name=$(basename "$script" .sh)
+        if ((${#script_name} > max_length)); then
+            max_length=${#script_name}
+        fi
+    done
+
+    let max_length+=3
+
+    for script in ./scripts/*.sh; do
+        script_name=$(basename "$script" .sh)
+        # Extract the first line of the script as its description
+        description=$(head -n 1 "$script" | sed 's/^# //')
+
+        # Format the script name to match the maximum length and append the description
+        formatted_name=$(printf "%-${max_length}s" "$script_name")
+        scripts_with_descriptions+=("$formatted_name: $description|")
+    done
+    echo " ${scripts_with_descriptions[@]}"
+}
+
+# Validate if argument is an available script
+function is_valid_script() {
+    local script_to_check="$1"
+    local available_scripts=($(list_scripts))
+    for script in "${available_scripts[@]}"; do
+        if [[ "$script" == "$script_to_check" ]]; then
+            return 0 # Script found, return success
+        fi
+    done
+    return 1 # Script not found, return failure
+}
+
+function print_help() {
+    echo "Usage: ./run.sh <script_name>"
+    echo "Available commands:"
+    IFS=$'|'
+    for entry in $(list_scripts_with_descriptions); do
+        echo "  $entry"
+    done
+}
+# Check options
+while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+    --help | -h)
+        print_help
+        exit 0
+        ;;
+    *)
+        break
+        ;;
+    esac
+    shift
+done
+
+# Check and validate the script
+if [[ -z "$1" ]]; then
+    echo "Shortcut script to run other scripts in the scripts/ directory."
+    echo "Usage: run <script_name>"
+    echo "Use -h to list all available commands."
+    exit 1
+elif ! is_valid_script "$1"; then
+    echo "Error: Command $1 does not exist."
+
+    print_help
+    exit 2
+else
+    SCRIPT="./scripts/$1.sh"
+    shift
+    "$SCRIPT" "$@"
+fi

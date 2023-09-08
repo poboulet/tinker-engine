@@ -1,0 +1,56 @@
+{
+    "version": 5,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 23,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "release",
+            "displayName": "Release",
+            "description": "Create release build using clang generator",
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/${presetName}",
+                "CMAKE_C_COMPILER": "/usr/bin/clang",
+                "CMAKE_CXX_COMPILER": "/usr/bin/clang++",
+                "CMAKE_BUILD_TYPE": "Release",
+                "BUILD_TESTS": "ON"
+            }
+        },
+        {
+            "name": "debug",
+            "displayName": "Debug",
+            "description": "Create debug build using clang generator",
+            "inherits": ["release"],
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "release",
+            "configurePreset": "release"
+        },
+        {
+          "name": "debug",
+          "configurePreset": "debug"
+         }
+    ],
+    "testPresets": [
+        {
+            "name": "debug-test",
+            "configurePreset": "debug",
+            "displayName": "Debug",
+            "description": "Run tests for debug configuration"
+        },
+        {
+            "name": "release-test",
+            "configurePreset": "release",
+            "displayName": "Release",
+            "description": "Run tests for release configuration"
+        }
+    ]
+}

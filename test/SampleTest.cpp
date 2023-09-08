@@ -1,5 +1,10 @@
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
-namespace {
-TEST(SampleTest, Negative) { EXPECT_EQ(1, 1); }
-}  // namespace
+namespace EngineTest
+{
+    TEST(FakeTest, Negative)
+    {
+        EXPECT_EQ(1, 1);
+    }
+
+}  // namespace EngineTest
