@@ -5,7 +5,7 @@ A small playground project to learn about video game engines.
 ## How to build
 
 ```
-./run.sh build// --debug or --release
+./bin/run.sh build // --debug or --release
 ```
 
 Runs the build script to build the project. It will create a build directory and run cmake and make to build the project.
