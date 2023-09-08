@@ -1,10 +1,8 @@
-# Run static code analysis using Cppcheck
-
+# Test the project using CTest
 #!/bin/bash
 
 set -e
 
-# Get the directory of the script
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 cd "$SCRIPT_DIR/.."
 
@@ -14,6 +12,7 @@ DEBUG_FLAG=0
 RELEASE_FLAG=0
 BUILD_TESTS="OFF"
 
+# Process command line arguments
 while [[ "$#" -gt 0 ]]; do
     case "$1" in
     --debug | -d)
@@ -23,7 +22,15 @@ while [[ "$#" -gt 0 ]]; do
         ;;
     --release | -r)
         RELEASE_FLAG=1
-        shift
+        shift # Do nothing, default already set
+        ;;
+    --help | -h)
+        echo "Usage: $0 [option]"
+        echo "Options:"
+        echo "  debug, -d     Install dependencies in for debug mode."
+        echo "  release, -r   Install dependencies in for release mode. (default)"
+        echo "  help, -h      Display this help message."
+        exit 0
         ;;
     *)
         echo "Invalid argument: $1. Use '--help' for usage details."
@@ -32,12 +39,6 @@ while [[ "$#" -gt 0 ]]; do
     esac
 done
 
-# If no arguments are provided, default to current directory
-cppcheck --enable=all --suppress=missingIncludeSystem --project=build/${BUILD_TYPE}/compile_commands.json 2>./temp_cppcheck_output.txt
-if [ -s temp_cppcheck_output.txt ]; then
-    echo "Cppcheck found issues:"
-    cat temp_cppcheck_output.txt
-    exit 1
-else
-    echo "No issues found by cppcheck"
-fi
+pushd "./build/$BUILD_TYPE"
+ctest
+popd

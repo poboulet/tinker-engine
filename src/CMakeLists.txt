@@ -1,5 +1,3 @@
-# For an application
-
 set(SOURCES 
     ./render/glfw_window.cpp
     ./file_reader.cpp

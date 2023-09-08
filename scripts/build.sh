@@ -1,6 +1,8 @@
 # Build the project using CMake
 #!/bin/bash
 
+set -e
+
 # Initialize default build type and flags
 BUILD_TYPE="release"
 DEBUG_FLAG=0

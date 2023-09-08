@@ -1,6 +1,8 @@
 # Update the CMakeLists.txt file with the list of all .cpp files in the current directory
 #!/bin/bash
 
+set -e
+
 ROOT_FOLDER="$(dirname "$(readlink -f "$0")")/.."
 cd $ROOT_FOLDER
 

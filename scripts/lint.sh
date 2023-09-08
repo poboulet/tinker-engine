@@ -1,6 +1,8 @@
 # Lint the project using clang-tidy
 #!/bin/bash
 
+set -e
+
 BUILD_PATH="./build/release"
 SOURCE_DIR="."
 EXCLUDED_DIRS=('build')
