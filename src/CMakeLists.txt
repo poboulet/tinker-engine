@@ -1,7 +1,6 @@
 # For an application
 
 set(SOURCES 
-    ./file_reader.cpp
     ./engine_app.cpp
     ./main.cpp
 )

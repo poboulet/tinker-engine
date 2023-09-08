@@ -1,0 +1,55 @@
+name: CMake on multiple platforms
+
+on:
+  push:
+    branches: ["*"]
+  pull_request:
+    branches: ["main"]
+
+env:
+  PROJECT_SCRIPT_SHORTCUTS: ${{ github.workspace }}/bin/tinker
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        build_type: [Release]
+        c_compiler: [clang]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install dependencies (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y llvm clang libglfw3-dev libvulkan-dev vulkan-tools cppcheck
+
+      - name: Set reusable strings
+        id: strings
+        shell: bash
+        run: echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+
+      - name: Install Conan
+        run: |
+          pip install conan
+          source ~/.profile
+          conan profile detect --force
+
+      - name: Build
+        run: $PROJECT_SCRIPT_SHORTCUTS build --tests
+
+      - name: Test
+        working-directory: ${{ steps.strings.outputs.build-output-dir }}
+        run: $PROJECT_SCRIPT_SHORTCUTS test
+
+      - name: Lint
+        working-directory: ${{ steps.strings.outputs.build-output-dir }}
+        run: $PROJECT_SCRIPT_SHORTCUTS lint
+
+      - name: Validate
+        run: $PROJECT_SCRIPT_SHORTCUTS validate
