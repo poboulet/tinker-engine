@@ -1,37 +1,73 @@
+# Build the project using CMake
 #!/bin/bash
 
-# Default to release build type
+# Initialize default build type and flags
 BUILD_TYPE="release"
+DEBUG_FLAG=0
+RELEASE_FLAG=0
+BUILD_TESTS="OFF"
 
-# If an argument is provided, use it to set the build type
-if [ "$#" -eq 1 ]; then
-    if [ "$1" = "debug" ]; then
+# Process command line arguments
+while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+    --debug | -d)
         BUILD_TYPE="debug"
-    elif [ "$1" != "release" ]; then
-        echo "Invalid build type. Accepted values are 'debug' or 'release'. Default is 'release'."
+        DEBUG_FLAG=1
+        shift
+        ;;
+    --release | -r)
+        RELEASE_FLAG=1
+        shift # Do nothing, default already set
+        ;;
+    --tests | -t)
+        BUILD_TESTS="ON"
+        shift
+        ;;
+    --help | -h)
+        echo "Usage: $0 [option]"
+        echo "Options:"
+        echo "  debug, -d     Build in debug mode."
+        echo "  release, -r   Build in release mode (default)."
+        echo "  tests, -t     Build with tests."
+        echo "  help, -h      Display this help message."
+        exit 0
+        ;;
+    *)
+        echo "Invalid argument: $1. Use '--help' for usage details."
         exit 1
-    fi
+        ;;
+    esac
+done
+
+# Check if both debug and release flags are set
+if [[ "$DEBUG_FLAG" -eq 1 && "$RELEASE_FLAG" -eq 1 ]]; then
+    echo "Error: Both --debug and --release options cannot be set simultaneously."
+    exit 1
 fi
 
+# Set up directories
 BUILD_DIR="build/$BUILD_TYPE"
+SCRIPT_DIR="scripts/"
 mkdir -p "$BUILD_DIR"
 
-SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
-cd "$SCRIPT_DIR/.."
+# Navigate to project root
 
-$SCRIPT_DIR/update-dependencies.sh $BUILD_TYPE
-
-
+# Update dependencies and sources
+$SCRIPT_DIR/update-dependencies.sh --$BUILD_TYPE
 ./scripts/update-sources.sh -d ./src
 ./scripts/update-sources.sh -d ./test
 
-# Navigate to build directory
+# Navigate to the build directory
 pushd "./$BUILD_DIR"
 
-# Capitalize the first letter of BUILD_TYPE for CMAKE_BUILD_TYPE value
+# Format build type: capitalize the first letter
 CMAKE_BUILD_TYPE=$(echo "$BUILD_TYPE" | awk '{print toupper(substr($0,1,1)) tolower(substr($0,2))}')
 
-cmake ../.. -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE="$CMAKE_BUILD_TYPE" -DBUILD_TESTS=ON
+# Find the path to the clang-tidy executable (this is a workaround for macOS since clang-tidy in llvm points to the wrong clang++ executable)
+export CXX=$(which clang++)
+
+# Run cmake commands
+cmake ../.. -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE="$CMAKE_BUILD_TYPE" -DBUILD_TESTS="$BUILD_TESTS" -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 cmake --build .
 
 # Return to the original directory
