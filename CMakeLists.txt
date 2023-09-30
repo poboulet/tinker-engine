@@ -26,9 +26,7 @@ else()
     message(STATUS "Using Vulkan lib at: ${Vulkan_LIBRARIES}")
 endif()
 
-# Find GLFW
-find_package(glfw3 3.3 REQUIRED)
-
+find_package(glfw3 REQUIRED)
 # Link libraries
 add_library(project_libs INTERFACE)
 target_link_libraries(project_libs INTERFACE Vulkan::Vulkan glfw)

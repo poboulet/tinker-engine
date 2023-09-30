@@ -1,6 +1,7 @@
 # For an application
 
 set(SOURCES 
+    ./render/glfw_window.cpp
     ./file_reader.cpp
     ./engine_app.cpp
     ./main.cpp
@@ -9,7 +10,9 @@ set(SOURCES
 add_executable(${PROJECT_NAME} ${SOURCES})  # List other source files as needed
 
 target_link_libraries(${PROJECT_NAME} project_libs)
+
 target_include_directories(${PROJECT_NAME}
     PRIVATE 
         ${CMAKE_SOURCE_DIR}/include
+        ${CMAKE_SOURCE_DIR}/include/render
 )
