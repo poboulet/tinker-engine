@@ -1,5 +1,10 @@
 #include "engine_app.hpp"
-namespace engine
+
+#include <iostream>
+
+using std::cout;
+
+namespace core
 {
 
     void EngineApp::run()
@@ -11,6 +16,8 @@ namespace engine
 
     void EngineApp::initVulkan()
     {
+        cout << "initVulkan"
+             << "\n";
     }
     void EngineApp::mainLoop()
     {
@@ -20,4 +27,4 @@ namespace engine
     {
     }
 
-}  // namespace engine
+}  // namespace core

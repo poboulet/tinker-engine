@@ -8,6 +8,7 @@ BUILD_TYPE="release"
 DEBUG_FLAG=0
 RELEASE_FLAG=0
 BUILD_TESTS="OFF"
+COVERAGE="OFF"
 
 # Process command line arguments
 while [[ "$#" -gt 0 ]]; do
@@ -25,12 +26,18 @@ while [[ "$#" -gt 0 ]]; do
         BUILD_TESTS="ON"
         shift
         ;;
+    --coverage | -c)
+        BUILD_TESTS="ON"
+        COVERAGE="ON"
+        shift
+        ;;
     --help | -h)
         echo "Usage: $0 [option]"
         echo "Options:"
         echo "  debug, -d     Build in debug mode."
         echo "  release, -r   Build in release mode (default)."
         echo "  tests, -t     Build with tests."
+        echo "  coverage, -c  Build with tests and coverage."
         echo "  help, -h      Display this help message."
         exit 0
         ;;
@@ -56,7 +63,7 @@ mkdir -p "$BUILD_DIR"
 
 # Update dependencies and sources
 $SCRIPT_DIR/update-dependencies.sh --$BUILD_TYPE
-./scripts/update-sources.sh -d ./src
+./scripts/update-sources.sh -d ./core
 ./scripts/update-sources.sh -d ./test
 
 # Navigate to the build directory
@@ -69,7 +76,7 @@ CMAKE_BUILD_TYPE=$(echo "$BUILD_TYPE" | awk '{print toupper(substr($0,1,1)) tolo
 export CXX=$(which clang++)
 
 # Run cmake commands
-cmake ../.. -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE="$CMAKE_BUILD_TYPE" -DBUILD_TESTS="$BUILD_TESTS" -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+cmake ../.. -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE="$CMAKE_BUILD_TYPE" -DBUILD_TESTS="$BUILD_TESTS" -DCOVERAGE="$COVERAGE" -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 cmake --build .
 
 # Return to the original directory

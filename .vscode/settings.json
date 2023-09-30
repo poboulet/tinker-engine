@@ -92,7 +92,9 @@
         "iterator": "cpp",
         "memory_resource": "cpp",
         "filesystem": "cpp",
-        "*.inc": "cpp"
+        "*.inc": "cpp",
+        "charconv": "cpp",
+        "__memory": "cpp"
     },
     "C_Cpp.default.intelliSenseMode": "",
     "C_Cpp.clang_format_fallbackStyle": "Google",
@@ -107,18 +109,4 @@
     "cmake.enabledOutputParsers": [
         "cmake"
     ],
-    "terminal.integrated.profiles.osx": {
-        "zsh": {
-            "path": "${workspaceFolder}/bin/zsh.sh",
-            "args": [
-                "-l"
-            ]
-        },
-        "bash": {
-            "path": "${workspaceFolder}/bin/bash.sh",
-            "args": [
-                "-l"
-            ]
-        }
-    },
 }

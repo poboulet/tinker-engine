@@ -34,4 +34,6 @@
 # Build files
 /build
 /Testing
+/coverage_report
+temp_cppcheck_output.txtgi
 CMakeUserPresets.json
