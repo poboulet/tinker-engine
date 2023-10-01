@@ -1,9 +1,4 @@
 {
-    "cmake.configureArgs": [
-        "-DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake",
-        "-DCMAKE_BUILD_TYPE=${env:CMAKE_BUILD_TYPE}",
-        "-DBUILD_TESTS=ON"
-    ],
     "C_Cpp.errorSquiggles": "enabled",
     "files.associations": {
         "iosfwd": "cpp",
@@ -109,4 +104,7 @@
     "cmake.enabledOutputParsers": [
         "cmake"
     ],
+    "cmake.environment": {
+        "CMAKE_TOOLCHAIN_FILE": "OK"
+    }
 }

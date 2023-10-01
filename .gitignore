@@ -35,5 +35,6 @@
 /build
 /Testing
 /coverage_report
+/vcpkg_installed
 temp_cppcheck_output.txtgi
 CMakeUserPresets.json

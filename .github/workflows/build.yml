@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: ghcr.io/pobie/ubuntu-vulkan:latest
+      image: ghcr.io/pobie/ubuntu-vulkan-cpp-dev:latest
 
     steps:
       - uses: actions/checkout@v3
@@ -24,9 +24,6 @@ jobs:
       - name: Set reusable strings
         id: strings
         run: echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_ENV"
-
-      - name: Source Conan
-        run: conan profile detect --force
 
       - name: Build
         run: $PROJECT_SCRIPT_SHORTCUTS build --tests

@@ -62,7 +62,7 @@ mkdir -p "$BUILD_DIR"
 # Navigate to project root
 
 # Update dependencies and sources
-$SCRIPT_DIR/update-dependencies.sh --$BUILD_TYPE
+vcpkg install
 ./scripts/update-sources.sh -d ./core
 ./scripts/update-sources.sh -d ./test
 
@@ -76,7 +76,7 @@ CMAKE_BUILD_TYPE=$(echo "$BUILD_TYPE" | awk '{print toupper(substr($0,1,1)) tolo
 export CXX=$(which clang++)
 
 # Run cmake commands
-cmake ../.. -DCMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -DCMAKE_BUILD_TYPE="$CMAKE_BUILD_TYPE" -DBUILD_TESTS="$BUILD_TESTS" -DCOVERAGE="$COVERAGE" -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+cmake ../.. -DCMAKE_TOOLCHAIN_FILE="$CMAKE_TOOLCHAIN_FILE" -DCMAKE_BUILD_TYPE="$CMAKE_BUILD_TYPE" -DBUILD_TESTS="$BUILD_TESTS" -DCOVERAGE="$COVERAGE" -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 cmake --build .
 
 # Return to the original directory

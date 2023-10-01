@@ -8,7 +8,7 @@ namespace core
         void run();
 
        private:
-        void initVulkan();
+        static void initVulkan();
         void mainLoop();
         void cleanup();
     };

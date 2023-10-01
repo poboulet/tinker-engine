@@ -13,6 +13,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Define project properties globally, instead of using CMAKE_CXX_FLAGS directly
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall") # for instance, to enable all warnings
 
+
 # Find Vulkan libraries
 if(DEFINED VULKAN_SDK_PATH)
     set(Vulkan_INCLUDE_DIRS "${VULKAN_SDK_PATH}/Include") 
@@ -30,6 +31,7 @@ else()
 endif()
 
 find_package(glfw3 REQUIRED)
+
 # Link libraries
 add_library(project_libs INTERFACE)
 target_link_libraries(project_libs INTERFACE Vulkan::Vulkan glfw)

@@ -12,18 +12,25 @@
             "description": "Create release build using clang generator",
             "binaryDir": "${sourceDir}/build/${presetName}",
             "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": {
+                    "value": "$env{CMAKE_TOOLCHAIN_FILE}",
+                    "type": "FILEPATH"
+                },
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/${presetName}",
                 "CMAKE_C_COMPILER": "/usr/bin/clang",
                 "CMAKE_CXX_COMPILER": "/usr/bin/clang++",
                 "CMAKE_BUILD_TYPE": "Release",
                 "BUILD_TESTS": "ON"
-            }
+            },
+            "toolchainFile": "/Users/pobie/dev/gamedev/vcpkg/scripts/buildsystems/vcpkg.cmake"
         },
         {
             "name": "debug",
             "displayName": "Debug",
             "description": "Create debug build using clang generator",
-            "inherits": ["release"],
+            "inherits": [
+                "release"
+            ],
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug"
             }
@@ -35,9 +42,9 @@
             "configurePreset": "release"
         },
         {
-          "name": "debug",
-          "configurePreset": "debug"
-         }
+            "name": "debug",
+            "configurePreset": "debug"
+        }
     ],
     "testPresets": [
         {
