@@ -6,7 +6,6 @@ find_package(GTest REQUIRED)
 include(GoogleTest)
 add_executable(${PROJECT_NAME}.test ${SOURCES}) 
 
-message(STATUS "CONAN_LIBS = ${CONAN_LIBS}")
 target_link_libraries(${PROJECT_NAME}.test PRIVATE project_libs GTest::GTest GTest::Main GTest::gmock_main)
 target_include_directories(${PROJECT_NAME}.test
     PRIVATE 

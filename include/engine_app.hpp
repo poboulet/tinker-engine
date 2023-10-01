@@ -1,6 +1,5 @@
 #pragma once
 
-#include "glfw_window.hpp"
 namespace core
 {
     class EngineApp
@@ -12,7 +11,6 @@ namespace core
         void initVulkan();
         void mainLoop();
         void cleanup();
-        Window window = GLFWWindowImpl();
     };
 
 }  // namespace core

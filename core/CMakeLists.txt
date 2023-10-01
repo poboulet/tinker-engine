@@ -2,14 +2,12 @@
 
 # Using a more explicit name for the list of core sources
 set(TINKERENGINE_CORE_SOURCES 
-    glfw_window.cpp
     engine_app.cpp
     # Add any other classes you want to include in the core library here
 )
 
 # Create a static library with core sources
 add_library(core_lib STATIC ${TINKERENGINE_CORE_SOURCES})
-
 
 if(COVERAGE)
     target_compile_options(core_lib PRIVATE -fprofile-instr-generate -fcoverage-mapping)

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <GLFW/glfw3.h>
-
 #include "window.hpp"
 
 namespace Engine
@@ -19,7 +17,6 @@ namespace Engine
         ~GLFWWindow() override;
 
        private:
-        GLFWwindow* window_;
         WindowDimensions dimensions_;
         const char* title_;
     };
