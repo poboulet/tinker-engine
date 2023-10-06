@@ -52,4 +52,14 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: tinker-core-linux
+<<<<<<< HEAD
           path: ${{ env.DISTRIBUTION_DIR }}
+=======
+          path: ${{ env.DISTRIBUTION_DIR }}/core
+
+      - name: Deploy Engine
+        uses: actions/upload-artifact@v3
+        with:
+          name: tinker-engine-linux
+          path: ${{ env.DISTRIBUTION_DIR }}/editor/bin
+>>>>>>> 772bc6b (Added deploy script)

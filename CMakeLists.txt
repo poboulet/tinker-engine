@@ -63,6 +63,7 @@ endif()
 
 
 add_subdirectory(core)
+add_subdirectory(editor)
 
 # Run cmake with -DBUILD_TESTS=ON to build tests
 if(BUILD_TESTS)

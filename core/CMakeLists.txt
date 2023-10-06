@@ -16,7 +16,7 @@ target_include_directories(TinkerEngine
 )
 
 install(TARGETS TinkerEngine
-        ARCHIVE DESTINATION lib)
+        ARCHIVE DESTINATION core/lib)
 
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/
-        DESTINATION include)
+        DESTINATION core/include)
