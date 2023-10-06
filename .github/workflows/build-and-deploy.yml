@@ -1,12 +1,8 @@
-name: Build
+name: Build and Deploy
 
 on:
   push:
-    branches-ignore:
-      - main
-  pull_request:
-    branches:
-      - main
+    branches: ["main"]
 
 env:
   PROJECT_SCRIPT_SHORTCUTS: ${{ github.workspace }}/bin/tinker
@@ -29,6 +25,7 @@ jobs:
         id: strings
         run: |
           echo "BUILD_OUTPUT_DIR=${{ github.workspace }}/build" >> "$GITHUB_ENV"
+          echo "DISTRIBUTION_DIR=$GITHUB_WORKSPACE/deploy" >> "$GITHUB_ENV"
 
       - name: Run CMake consuming CMakePreset.json and run vcpkg to build dependencies
         uses: lukka/run-cmake@v10
@@ -46,3 +43,13 @@ jobs:
 
       - name: Validate
         run: $PROJECT_SCRIPT_SHORTCUTS validate
+
+      - name: Install Library for Deployment
+        run: |
+          cmake --install $GITHUB_WORKSPACE/build/release --prefix ${{ env.DISTRIBUTION_DIR }}
+
+      - name: Deploy Library
+        uses: actions/upload-artifact@v3
+        with:
+          name: tinker-core-linux
+          path: ${{ env.DISTRIBUTION_DIR }}

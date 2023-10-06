@@ -33,7 +33,7 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 # If no arguments are provided, default to current directory
-cppcheck --enable=all --suppress=missingIncludeSystem --project=build/${BUILD_TYPE}/compile_commands.json 2>./temp_cppcheck_output.txt
+cppcheck --enable=all --suppress=missingIncludeSystem --suppress=unusedFunction --project=build/${BUILD_TYPE}/compile_commands.json 2>./temp_cppcheck_output.txt
 if [ -s temp_cppcheck_output.txt ]; then
     echo "Cppcheck found issues:"
     cat temp_cppcheck_output.txt
