@@ -1,0 +1,40 @@
+name: CMake on multiple platforms
+
+on:
+  pull_request:
+    branches: ["main"]
+
+env:
+  PROJECT_SCRIPT_SHORTCUTS: ${{ github.workspace }}/bin/tinker
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    container:
+      image: ghcr.io/pobie/ubuntu-vulkan-cpp-dev:latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set reusable strings
+        id: strings
+        run: echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_ENV"
+
+      - name: Build
+        run: $PROJECT_SCRIPT_SHORTCUTS build --tests
+
+      - name: Test
+        working-directory: ${{ steps.strings.outputs.build-output-dir }}
+        run: $PROJECT_SCRIPT_SHORTCUTS test
+
+      - name: Lint
+        working-directory: ${{ steps.strings.outputs.build-output-dir }}
+        run: $PROJECT_SCRIPT_SHORTCUTS lint
+
+      - name: Validate
+        run: $PROJECT_SCRIPT_SHORTCUTS validate

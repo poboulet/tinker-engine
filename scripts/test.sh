@@ -1,4 +1,4 @@
-# Install dependencies for the project using Conan.
+# Test the project using CTest
 #!/bin/bash
 
 set -e
@@ -10,7 +10,7 @@ cd "$SCRIPT_DIR/.."
 BUILD_TYPE="release"
 DEBUG_FLAG=0
 RELEASE_FLAG=0
-BUILD_TESTS="OFF"
+COVERAGE=false
 
 # Process command line arguments
 while [[ "$#" -gt 0 ]]; do
@@ -23,6 +23,10 @@ while [[ "$#" -gt 0 ]]; do
     --release | -r)
         RELEASE_FLAG=1
         shift # Do nothing, default already set
+        ;;
+    --cover | -c)
+        COVERAGE=true
+        shift
         ;;
     --help | -h)
         echo "Usage: $0 [option]"
@@ -39,13 +43,14 @@ while [[ "$#" -gt 0 ]]; do
     esac
 done
 
-# Check if both debug and release flags are set
-if [[ "$DEBUG_FLAG" -eq 1 && "$RELEASE_FLAG" -eq 1 ]]; then
-    echo "Error: Both --debug and --release options cannot be set simultaneously."
-    exit 1
+pushd "./build/$BUILD_TYPE/test"
+ctest
+popd
+
+if $COVERAGE; then
+    echo ${PWD}
+    ls -a
+
+    llvm-profdata merge -sparse ./build/${BUILD_TYPE}/coverage/*.profraw -o ./build/${BUILD_TYPE}/coverage/tinker.profdata
+    llvm-cov show ./build/${BUILD_TYPE}/test/TinkerEngine.test -object=./build/${BUILD_TYPE}/core/TinkerEngine -instr-profile=./build/${BUILD_TYPE}/coverage/tinker.profdata -format=html -output-dir=coverage_report -ignore-filename-regex=".*test/.*"
 fi
-
-CAPITALIZED_BUILD_TYPE=$(echo "$BUILD_TYPE" | awk '{print toupper(substr($0,1,1)) tolower(substr($0,2))}')
-
-mkdir -p conan
-conan install . --output-folder=./build/$BUILD_TYPE --build=missing -s build_type=$CAPITALIZED_BUILD_TYPE$()

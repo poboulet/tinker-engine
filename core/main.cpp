@@ -5,14 +5,14 @@
 
 auto main() -> int
 {
-    engine::EngineApp app{};
+    core::EngineApp app;
     try
     {
         app.run();
     }
-    catch (const std::exception &e)
+    catch (const std::exception& e)
     {
-        std::cerr << e.what() << '\n';
+        std::cerr << e.what() << std::endl;
         return EXIT_FAILURE;
     }
 

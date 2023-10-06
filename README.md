@@ -14,9 +14,11 @@ This will create a binary called `TinkerEngine` in the build/src directory.
 
 ### VSCode Launch Configurations
 
-VSCode launch configurations are included to either run or debug the project. These automatically execute the build script with the right flags, and then launch the binary from either the "build/release/src" or "build/debug/src" directory.
+VSCode launch configurations are included to either run or debug the project. These automatically execute the build script with the right flags, and then launch the binary from either the "build/release" or "build/debug" directory.
 
 - `TinkerEngine: Run ` - Runs the project in release mode.
 - `TinkerEngine: Debug ` - Runs the project in debug mode.
 - `TinkerEngine: Debug (Tests)` - Runs the test project in debug mode.
 - `TinkerEngine: Run (Tests)` - Runs the test project in release mode.
+
+

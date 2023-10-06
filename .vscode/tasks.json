@@ -4,9 +4,10 @@
         {
             "label": "build_debug",
             "type": "shell",
-            "command": "./run.sh",
+            "command": "${workspaceFolder}/bin/tinker",
             "args": [
-                "build --debug"
+                "build",
+                "--debug"
             ],
             "group": {
                 "kind": "build"
@@ -15,11 +16,12 @@
         {
             "label": "build_debug_with_tests",
             "type": "shell",
-            "command": "./run.sh",
+            "command": "${workspaceFolder}/bin/tinker",
             "args": [
                 "build",
                 "--debug",
-                "--tests"
+                "--tests",
+                "--coverage"
             ],
             "group": {
                 "kind": "build"
@@ -28,7 +30,7 @@
         {
             "label": "build_release",
             "type": "shell",
-            "command": "./run.sh",
+            "command": "${workspaceFolder}/bin/tinker",
             "args": [
                 "build",
                 "--release"
@@ -40,11 +42,12 @@
         {
             "label": "build_release_with_tests",
             "type": "shell",
-            "command": "./run.sh",
+            "command": "${workspaceFolder}/bin/tinker",
             "args": [
                 "build",
                 "--release",
-                "--tests"
+                "--tests",
+                "--coverage"
             ],
             "group": {
                 "kind": "build"
@@ -53,7 +56,11 @@
         {
             "label": "conan_install",
             "type": "shell",
-            "command": "./run.sh update-dependencies --${input:buildType}",
+            "command": "${workspaceFolder}/bin/tinker",
+            "args": [
+                "update-dependencies",
+                "--${input:buildType}"
+            ],
             "group": {
                 "kind": "build"
             }

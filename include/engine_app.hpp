@@ -1,6 +1,6 @@
 #pragma once
 
-namespace engine
+namespace core
 {
     class EngineApp
     {
@@ -8,9 +8,9 @@ namespace engine
         void run();
 
        private:
-        void initVulkan();
+        static void initVulkan();
         void mainLoop();
         void cleanup();
     };
 
-}  // namespace engine
+}  // namespace core

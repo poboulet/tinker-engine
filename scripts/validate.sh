@@ -2,6 +2,8 @@
 
 #!/bin/bash
 
+set -e
+
 # Get the directory of the script
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 cd "$SCRIPT_DIR/.."
@@ -31,8 +33,11 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 # If no arguments are provided, default to current directory
-if [ "$#" -eq 0 ]; then
-    cppcheck --enable=all --suppress=missingIncludeSystem --project=build/${BUILD_TYPE}/compile_commands.json
+cppcheck --enable=all --suppress=missingIncludeSystem --project=build/${BUILD_TYPE}/compile_commands.json 2>./temp_cppcheck_output.txt
+if [ -s temp_cppcheck_output.txt ]; then
+    echo "Cppcheck found issues:"
+    cat temp_cppcheck_output.txt
+    exit 1
 else
-    cppcheck --enable=all --suppress=missingIncludeSystem --file-filter=$1 --project=build/${BUILD_TYPE}/compile_commands.json
+    echo "No issues found by cppcheck"
 fi

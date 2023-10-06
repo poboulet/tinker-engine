@@ -1,6 +1,8 @@
 # Update the CMakeLists.txt file with the list of all .cpp files in the current directory
 #!/bin/bash
 
+set -e
+
 ROOT_FOLDER="$(dirname "$(readlink -f "$0")")/.."
 cd $ROOT_FOLDER
 
@@ -34,7 +36,7 @@ export CMakeFilePath=./CMakeLists.txt
 
 pushd $Directory
 export AUTO_UPDATE_CPP_FILES=$(find . -name "*.cpp" | sed 's/.*/    &/')
-perl -i -pe 'BEGIN{undef $/;} s/set\(SOURCES.*?\)/set(SOURCES \n$ENV{AUTO_UPDATE_CPP_FILES}\n)/sm' $CMakeFilePath
+perl -i -pe 'BEGIN{undef $/;} s/set\(([^ ]+_SOURCES)\s*\)/set($1\n$ENV{AUTO_UPDATE_CPP_FILES}\n)/sm' $CMakeFilePath
 
 # Check if the replace was successful
 if [ $? -eq 0 ]; then

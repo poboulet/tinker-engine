@@ -1,5 +1,8 @@
 #!/bin/bash
 
+SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+cd "$SCRIPT_DIR/.."
+
 # Function to return a list of available scripts
 function list_scripts() {
     local available_scripts=()

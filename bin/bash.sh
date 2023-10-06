@@ -1,5 +1,0 @@
-#!/bin/bash
-
-export PATH="${PWD}/bin:$PATH"
-
-exec bash

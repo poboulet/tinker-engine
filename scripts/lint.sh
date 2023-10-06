@@ -1,9 +1,11 @@
 # Lint the project using clang-tidy
 #!/bin/bash
 
+set -e
+
 BUILD_PATH="./build/release"
 SOURCE_DIR="."
-EXCLUDED_DIRS=('build')
+EXCLUDED_DIRS=('build' 'vcpkg_installed')
 
 while getopts "p:s:e:" opt; do
     case "$opt" in
@@ -34,7 +36,6 @@ for dir in "${EXCLUDED_DIRS[@]}"; do
 done
 
 echo "Running clang-tidy on files in $SOURCE_DIR"
-echo "Reading compile_commands.json from $BUILD_PATH"
 
 echo $FIND_EXCLUSIONS
 
