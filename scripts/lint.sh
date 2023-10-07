@@ -5,7 +5,7 @@ set -e
 
 BUILD_PATH="./build/release"
 SOURCE_DIR="."
-EXCLUDED_DIRS=('build' 'vcpkg_installed')
+EXCLUDED_DIRS=('build' 'vcpkg_installed' 'deploy' 'CMakeFiles')
 
 while getopts "p:s:e:" opt; do
     case "$opt" in
@@ -38,6 +38,4 @@ done
 echo "Running clang-tidy on files in $SOURCE_DIR"
 
 echo $FIND_EXCLUSIONS
-
-# Use eval to execute the find command with our dynamic exclusions
 eval "find \"$SOURCE_DIR\" \( -name '*.cpp' -o -name '*.cc' -o -name '*.cxx' -o -name '*.c++' \) $FIND_EXCLUSIONS" | xargs clang-tidy -p "$BUILD_PATH"

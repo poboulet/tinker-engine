@@ -57,7 +57,6 @@ fi
 # Set up directories
 BUILD_DIR="build/$BUILD_TYPE"
 SCRIPT_DIR="scripts/"
-mkdir -p "$BUILD_DIR"
 
 # Navigate to project root
 
@@ -67,7 +66,6 @@ vcpkg install
 ./scripts/update-sources.sh -d ./test
 
 # Navigate to the build directory
-pushd "./$BUILD_DIR"
 
 # Format build type: capitalize the first letter
 CMAKE_BUILD_TYPE=$(echo "$BUILD_TYPE" | awk '{print toupper(substr($0,1,1)) tolower(substr($0,2))}')
@@ -76,8 +74,5 @@ CMAKE_BUILD_TYPE=$(echo "$BUILD_TYPE" | awk '{print toupper(substr($0,1,1)) tolo
 export CXX=$(which clang++)
 
 # Run cmake commands
-cmake ../.. -DCMAKE_TOOLCHAIN_FILE="$CMAKE_TOOLCHAIN_FILE" -DCMAKE_BUILD_TYPE="$CMAKE_BUILD_TYPE" -DBUILD_TESTS="$BUILD_TESTS" -DCOVERAGE="$COVERAGE" -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-cmake --build .
-
-# Return to the original directory
-popd
+cmake --preset $BUILD_TYPE -DBUILD_TESTS="$BUILD_TESTS" -DCOVERAGE="$COVERAGE" -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+cmake --build --preset $BUILD_TYPE

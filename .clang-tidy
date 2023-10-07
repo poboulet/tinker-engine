@@ -10,5 +10,5 @@ Checks: "*,
         -misc-non-private-member-variables-in-classes,
 "
 WarningsAsErrors: ''
-HeaderFilterRegex: '^(?!.*vcpkg_installed).*$'
-FormatStyle:     none
+HeaderFilterRegex: '^(?!.*(vcpkg_installed|deploy)).*$'
+FormatStyle: none
