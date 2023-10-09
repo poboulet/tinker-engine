@@ -1,0 +1,39 @@
+name: "Build Action for macOS"
+description: "Handles building, linting, testing, and validation for macOS."
+
+inputs:
+  brewDeps:
+    description: "Dependencies to install with Brew for macOS."
+    required: false
+    default: ""
+  shell:
+    description: "Shell to use for running commands."
+    required: false
+    default: "bash"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Dependencies on macOS
+      shell: ${{ inputs.shell }}
+      run: brew install ${{ inputs.brewDeps }}
+
+    - name: Initialize and Bootstrap vcpkg
+      shell: ${{ inputs.shell }}
+      run: ./vcpkg/bootstrap-vcpkg.sh
+
+    - name: Set LLVM paths for macOS
+      shell: ${{ inputs.shell }}
+      run: |
+        echo "PATH=$(brew --prefix cppcheck)/bin:$PATH" >> "$GITHUB_ENV"
+        echo "PATH=$(brew --prefix llvm)/bin:$PATH" >> "$GITHUB_ENV"
+
+    - name: Set reusable strings
+      shell: ${{ inputs.shell }}
+      run: |
+        echo "BUILD_OUTPUT_DIR=${{ github.workspace }}/build" >> "$GITHUB_ENV"
+        echo "DISTRIBUTION_DIR=$GITHUB_WORKSPACE/deploy" >> "$GITHUB_ENV"
+
+    - name: Build
+      shell: ${{ inputs.shell }}
+      run: $PROJECT_SCRIPT_SHORTCUTS build --tests

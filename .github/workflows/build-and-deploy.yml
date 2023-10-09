@@ -4,62 +4,54 @@ on:
   push:
     branches: ["main"]
 
-env:
-  PROJECT_SCRIPT_SHORTCUTS: ${{ github.workspace }}/bin/tinker
-
 defaults:
   run:
     shell: bash
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-
+  build-and-deploy:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            image: ghcr.io/pobie/ubuntu-vulkan-cpp-dev:latest
+          - os: macos-latest
+            brewDeps: "ninja cppcheck"
+          - os: windows-latest
+            chocoDeps: "ninja cppcheck"
+    runs-on: ${{ matrix.os }}
     container:
-      image: ghcr.io/pobie/ubuntu-vulkan-cpp-dev:latest
-
+      image: ${{ matrix.image }}
     steps:
       - uses: actions/checkout@v3
-
-      - name: Set reusable strings
-        id: strings
-        run: |
-          echo "BUILD_OUTPUT_DIR=${{ github.workspace }}/build" >> "$GITHUB_ENV"
-          echo "DISTRIBUTION_DIR=$GITHUB_WORKSPACE/deploy" >> "$GITHUB_ENV"
-
-      - name: Run CMake consuming CMakePreset.json and run vcpkg to build dependencies
-        uses: lukka/run-cmake@v10
         with:
-          configurePreset: "release"
-          buildPreset: "release"
+          submodules: recursive
 
-      - name: Test
-        working-directory: ${{ env.BUILD_OUTPUT_DIR }}
-        run: $PROJECT_SCRIPT_SHORTCUTS test
+      - name: Build on Ubuntu
+        if: matrix.os == 'ubuntu-latest'
+        env:
+          PROJECT_SCRIPT_SHORTCUTS: ${{ github.workspace }}/bin/tinker
+        uses: ./.github/actions/build-action/linux
 
-      - name: Lint
-        working-directory: ${{ env.BUILD_OUTPUT_DIR }}
-        run: $PROJECT_SCRIPT_SHORTCUTS lint
-
-      - name: Validate
-        run: $PROJECT_SCRIPT_SHORTCUTS validate
-
-      - name: Install Library for Deployment
-        run: |
-          cmake --install $GITHUB_WORKSPACE/build/release --prefix ${{ env.DISTRIBUTION_DIR }}
-
-      - name: Deploy Library
-        uses: actions/upload-artifact@v3
+      - name: Build on macOS
+        if: matrix.os == 'macos-latest'
+        env:
+          PROJECT_SCRIPT_SHORTCUTS: ${{ github.workspace }}/bin/tinker
+        uses: ./.github/actions/build-action/macos
         with:
-          name: tinker-core-linux
-<<<<<<< HEAD
-          path: ${{ env.DISTRIBUTION_DIR }}
-=======
-          path: ${{ env.DISTRIBUTION_DIR }}/core
+          brewDeps: ${{ matrix.brewDeps }}
 
-      - name: Deploy Engine
-        uses: actions/upload-artifact@v3
+      - name: Build on Windows
+        if: matrix.os == 'windows-latest'
+        env:
+          PROJECT_SCRIPT_SHORTCUTS: ${{ github.workspace }}\bin\tinker
+        uses: ./.github/actions/build-action/windows
+
+      - name: Deploy
+        env:
+          PROJECT_SCRIPT_SHORTCUTS: ${{ matrix.os == 'windows-latest' && '${{ github.workspace }}\bin\tinker' || '${{ github.workspace }}/bin/tinker' }}
+        uses: ./.github/actions/deploy-action
         with:
-          name: tinker-engine-linux
-          path: ${{ env.DISTRIBUTION_DIR }}/editor/bin
->>>>>>> 772bc6b (Added deploy script)
+          os: ${{ matrix.os }}
+          deployCoreLibrary: ${{ matrix.os == 'ubuntu-latest' }}

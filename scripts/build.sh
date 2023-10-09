@@ -61,7 +61,7 @@ SCRIPT_DIR="scripts/"
 # Navigate to project root
 
 # Update dependencies and sources
-vcpkg install
+./vcpkg/vcpkg install
 ./scripts/update-sources.sh -d ./core
 ./scripts/update-sources.sh -d ./test
 

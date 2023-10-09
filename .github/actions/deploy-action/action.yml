@@ -1,0 +1,49 @@
+name: "Deploy Action"
+description: "Deploys the library and engine."
+
+inputs:
+  os:
+    description: "Operating system."
+    required: true
+  shell:
+    description: "Shell to use for running commands."
+    required: false
+    default: "bash"
+  deployCoreLibrary:
+    description: "Determine whether to deploy the library or not."
+    required: true
+    default: "false"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install Library for Deployment
+      shell: ${{ inputs.shell }}
+      run: cmake --install $GITHUB_WORKSPACE/build/release --prefix ${{ env.DISTRIBUTION_DIR }}
+
+    - name: Zip Library
+      shell: ${{ inputs.shell }}
+      run: |
+        pushd ${{ env.DISTRIBUTION_DIR }}/core
+        zip -r tinker-core-${{ inputs.os }}.zip *
+        popd
+
+    - name: Deploy Library
+      if: ${{ inputs.deployCoreLibrary == 'true' }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: tinker-core-${{ inputs.os }}
+        path: ${{ env.DISTRIBUTION_DIR }}/core/tinker-core-lib.zip
+
+    - name: Zip Engine
+      shell: ${{ inputs.shell }}
+      run: |
+        pushd ${{ env.DISTRIBUTION_DIR }}/editor/bin
+        zip -r tinker-engine-${{ inputs.os }}.zip *
+        popd
+
+    - name: Deploy Engine
+      uses: actions/upload-artifact@v3
+      with:
+        name: tinker-engine-${{ inputs.os }}
+        path: ${{ env.DISTRIBUTION_DIR }}/editor/bin/tinker-engine-${{ inputs.os }}.zip

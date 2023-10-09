@@ -5,7 +5,7 @@ set -e
 
 BUILD_PATH="./build/release"
 SOURCE_DIR="."
-EXCLUDED_DIRS=('build' 'vcpkg_installed' 'deploy' 'CMakeFiles')
+EXCLUDED_DIRS=('build' 'vcpkg_installed' 'deploy' 'CMakeFiles' 'vcpkg')
 
 while getopts "p:s:e:" opt; do
     case "$opt" in

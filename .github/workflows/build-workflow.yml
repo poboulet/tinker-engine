@@ -1,0 +1,37 @@
+name: Build
+
+on:
+  push:
+    branches-ignore:
+      - "main"
+  pull_request:
+    branches:
+      - main
+env:
+  PROJECT_SCRIPT_SHORTCUTS: ${{ github.workspace }}/bin/tinker
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        include:
+          - os: ubuntu-latest
+            image: ghcr.io/pobie/ubuntu-vulkan-cpp-dev:latest
+    runs-on: ${{ matrix.os }}
+    container:
+      image: ${{ matrix.image }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Build
+        uses: ./.github/actions/build-action/linux
+
+      - name: Validate Build
+        uses: ./.github/actions/validate-build-action
