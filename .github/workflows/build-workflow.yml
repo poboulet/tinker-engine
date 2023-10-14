@@ -7,8 +7,6 @@ on:
   pull_request:
     branches:
       - main
-env:
-  PROJECT_SCRIPT_SHORTCUTS: ${{ github.workspace }}/bin/tinker
 
 defaults:
   run:
@@ -18,10 +16,15 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest]
         include:
           - os: ubuntu-latest
             image: ghcr.io/pobie/ubuntu-vulkan-cpp-dev:latest
+          - os: macos-latest
+            brewDeps: "ninja llvm cppcheck"
+          - os: windows-latest
+            chocoDeps: "ninja cppcheck"
+
     runs-on: ${{ matrix.os }}
     container:
       image: ${{ matrix.image }}
@@ -30,8 +33,24 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Build
+      - name: Build on Ubuntu
+        if: matrix.os == 'ubuntu-latest'
+        env:
+          PROJECT_SCRIPT_SHORTCUTS: ${{ github.workspace }}/bin/tinker
         uses: ./.github/actions/build-action/linux
 
-      - name: Validate Build
-        uses: ./.github/actions/validate-build-action
+      - name: Build on macOS
+        if: matrix.os == 'macos-latest'
+        env:
+          PROJECT_SCRIPT_SHORTCUTS: ${{ github.workspace }}/bin/tinker
+        uses: ./.github/actions/build-action/macos
+        with:
+          brewDeps: ${{ matrix.brewDeps }}
+
+      - name: Build on Windows
+        if: matrix.os == 'windows-latest'
+        env:
+          PROJECT_SCRIPT_SHORTCUTS: ${{ github.workspace }}\bin\tinker
+        uses: ./.github/actions/build-action/windows
+        with:
+          chocoDeps: ${{ matrix.chocoDeps }}

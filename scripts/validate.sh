@@ -8,32 +8,42 @@ set -e
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 cd "$SCRIPT_DIR/.."
 
-# Initialize default build type and flags
-BUILD_TYPE="release"
-DEBUG_FLAG=0
-RELEASE_FLAG=0
-BUILD_TESTS="OFF"
-
 while [[ "$#" -gt 0 ]]; do
     case "$1" in
-    --debug | -d)
-        BUILD_TYPE="debug"
-        DEBUG_FLAG=1
+    --preset | -p)
+        PRESET="$2"
         shift
         ;;
-    --release | -r)
-        RELEASE_FLAG=1
-        shift
+    --help | -h)
+        echo "Usage: $0 [build_type] [options]"
+        echo "Presets:"
+        echo "  debug-unix-x64       Build in debug mode for Unix x64."
+        echo "  release-unix-x64     Build in release mode for Unix x64."
+        echo "  debug-windows-x64    Build in debug mode for Windows x64."
+        echo "  release-windows-x64  Build in release mode for Windows x64."
+        echo "Options:"
+        echo "  --coverage, -c       Run tests with coverage."
+        echo "  --help, -h           Display this help message."
+        exit 0
         ;;
     *)
-        echo "Invalid argument: $1. Use '--help' for usage details."
-        exit 1
+        shift
         ;;
     esac
 done
 
+if [[ -z "$PRESET" ]]; then
+    echo "Error: Please specify a build preset."
+    exit 1
+fi
+
+if ! command -v cppcheck &>/dev/null; then
+    echo "Error: cppcheck is not installed or not found in PATH."
+    exit 1
+fi
+
 # If no arguments are provided, default to current directory
-cppcheck --enable=all --suppress=missingIncludeSystem --suppress=unusedFunction --project=build/${BUILD_TYPE}/compile_commands.json 2>./temp_cppcheck_output.txt
+cppcheck --enable=all --suppress=missingIncludeSystem --suppress=unusedFunction --project=build/${PRESET}/compile_commands.json 2>./temp_cppcheck_output.txt
 if [ -s temp_cppcheck_output.txt ]; then
     echo "Cppcheck found issues:"
     cat temp_cppcheck_output.txt

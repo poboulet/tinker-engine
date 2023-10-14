@@ -22,4 +22,16 @@ runs:
 
     - name: Build
       shell: ${{ inputs.shell }}
-      run: $PROJECT_SCRIPT_SHORTCUTS build --tests
+      run: $PROJECT_SCRIPT_SHORTCUTS build --preset release-unix-x64 --tests
+
+    - name: Lint
+      shell: ${{ inputs.shell }}
+      run: $PROJECT_SCRIPT_SHORTCUTS lint --preset release-unix-x64
+
+    - name: Test
+      shell: ${{ inputs.shell }}
+      run: $PROJECT_SCRIPT_SHORTCUTS test --preset release-unix-x64
+
+    - name: Validate
+      shell: ${{ inputs.shell }}
+      run: $PROJECT_SCRIPT_SHORTCUTS validate --preset release-unix-x64
