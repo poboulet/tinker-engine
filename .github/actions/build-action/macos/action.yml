@@ -30,9 +30,7 @@ runs:
 
     - name: Set reusable strings
       shell: ${{ inputs.shell }}
-      run: |
-        echo "BUILD_OUTPUT_DIR=${{ github.workspace }}/build" >> "$GITHUB_ENV"
-        echo "DISTRIBUTION_DIR=$GITHUB_WORKSPACE/deploy" >> "$GITHUB_ENV"
+      run: echo "DISTRIBUTION_DIR=$GITHUB_WORKSPACE/deploy" >> "$GITHUB_ENV"
 
     - name: Build
       shell: ${{ inputs.shell }}

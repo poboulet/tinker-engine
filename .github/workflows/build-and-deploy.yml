@@ -17,9 +17,9 @@ jobs:
           - os: ubuntu-latest
             image: ghcr.io/pobie/ubuntu-vulkan-cpp-dev:latest
           - os: macos-latest
-            brewDeps: "ninja cppcheck"
+            brewDeps: "ninja llvm cppcheck"
           - os: windows-latest
-            chocoDeps: "ninja cppcheck"
+            chocoDeps: "ninja cppcheck zip"
     runs-on: ${{ matrix.os }}
     container:
       image: ${{ matrix.image }}
@@ -47,11 +47,31 @@ jobs:
         env:
           PROJECT_SCRIPT_SHORTCUTS: ${{ github.workspace }}\bin\tinker
         uses: ./.github/actions/build-action/windows
+        with:
+          chocoDeps: ${{ matrix.chocoDeps }}
 
-      - name: Deploy
+      - name: Deploy on Ubuntu
+        if: matrix.os == 'ubuntu-latest'
         env:
-          PROJECT_SCRIPT_SHORTCUTS: ${{ matrix.os == 'windows-latest' && '${{ github.workspace }}\bin\tinker' || '${{ github.workspace }}/bin/tinker' }}
+          PROJECT_SCRIPT_SHORTCUTS: ${{ github.workspace }}/bin/tinker
         uses: ./.github/actions/deploy-action
         with:
           os: ${{ matrix.os }}
-          deployCoreLibrary: ${{ matrix.os == 'ubuntu-latest' }}
+          deployCoreLibrary: true
+
+      - name: Deploy on macOS
+        if: matrix.os == 'macos-latest'
+        env:
+          PROJECT_SCRIPT_SHORTCUTS: ${{ github.workspace }}/bin/tinker
+        uses: ./.github/actions/deploy-action
+        with:
+          os: ${{ matrix.os }}
+
+      - name: Deploy on Windows
+        if: matrix.os == 'windows-latest'
+        env:
+          PROJECT_SCRIPT_SHORTCUTS: ${{ github.workspace }}\bin\tinker
+        uses: ./.github/actions/deploy-action
+        with:
+          os: ${{ matrix.os }}
+          buildFolder: "release-windows-x64"

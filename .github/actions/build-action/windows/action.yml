@@ -39,8 +39,13 @@ runs:
     - name: Set reusable strings
       shell: ${{ inputs.shell }}
       run: |
-        echo "BUILD_OUTPUT_DIR=${{ github.workspace }}\build" >> "$env:GITHUB_ENV"
-        echo "DISTRIBUTION_DIR=$env:GITHUB_WORKSPACE\deploy" >> "$env:GITHUB_ENV"
+        DISTRIBUTION_DIR_BASH=${GITHUB_WORKSPACE//\\//}
+        echo "DISTRIBUTION_DIR=$DISTRIBUTION_DIR_BASH/deploy" >> "$GITHUB_ENV"
+
+    - name: Debug Paths
+      shell: ${{ inputs.shell }}
+      run: |
+        echo ${{ env.DISTRIBUTION_DIR }}
 
     - name: Build
       shell: ${{ inputs.shell }}
