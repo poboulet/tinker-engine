@@ -1,15 +1,19 @@
-name: Build and Deploy
+name: Build
 
 on:
   push:
-    branches: ["main"]
+    branches-ignore:
+      - "main"
+  pull_request:
+    branches:
+      - main
 
 defaults:
   run:
     shell: bash
 
 jobs:
-  build-and-deploy:
+  build:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
@@ -17,9 +21,10 @@ jobs:
           - os: ubuntu-latest
             image: ghcr.io/pobie/ubuntu-vulkan-cpp-dev:latest
           - os: macos-latest
-            brewDeps: "ninja cppcheck"
+            brewDeps: "ninja llvm cppcheck"
           - os: windows-latest
             chocoDeps: "ninja cppcheck"
+
     runs-on: ${{ matrix.os }}
     container:
       image: ${{ matrix.image }}
@@ -47,11 +52,5 @@ jobs:
         env:
           PROJECT_SCRIPT_SHORTCUTS: ${{ github.workspace }}\bin\tinker
         uses: ./.github/actions/build-action/windows
-
-      - name: Deploy
-        env:
-          PROJECT_SCRIPT_SHORTCUTS: ${{ matrix.os == 'windows-latest' && '${{ github.workspace }}\bin\tinker' || '${{ github.workspace }}/bin/tinker' }}
-        uses: ./.github/actions/deploy-action
         with:
-          os: ${{ matrix.os }}
-          deployCoreLibrary: ${{ matrix.os == 'ubuntu-latest' }}
+          chocoDeps: ${{ matrix.chocoDeps }}

@@ -1,6 +1,0 @@
-[requires]
-gtest/1.14.0
-glfw/3.3.8
-[generators]
-CMakeDeps
-CMakeToolchain

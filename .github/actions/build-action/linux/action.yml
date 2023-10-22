@@ -1,0 +1,37 @@
+name: "Build Action for Linux"
+description: "Handles building, linting, testing, and validation for Linux."
+
+inputs:
+  shell:
+    description: "Shell to use for running commands."
+    required: false
+    default: "bash"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Initialize and Bootstrap vcpkg
+      shell: ${{ inputs.shell }}
+      run: ./vcpkg/bootstrap-vcpkg.sh
+
+    - name: Set reusable strings
+      shell: ${{ inputs.shell }}
+      run: |
+        echo "BUILD_OUTPUT_DIR=${{ github.workspace }}/build" >> "$GITHUB_ENV"
+        echo "DISTRIBUTION_DIR=$GITHUB_WORKSPACE/deploy" >> "$GITHUB_ENV"
+
+    - name: Build
+      shell: ${{ inputs.shell }}
+      run: $PROJECT_SCRIPT_SHORTCUTS build --preset release-unix-x64 --tests
+
+    - name: Lint
+      shell: ${{ inputs.shell }}
+      run: $PROJECT_SCRIPT_SHORTCUTS lint --preset release-unix-x64
+
+    - name: Test
+      shell: ${{ inputs.shell }}
+      run: $PROJECT_SCRIPT_SHORTCUTS test --preset release-unix-x64
+
+    - name: Validate
+      shell: ${{ inputs.shell }}
+      run: $PROJECT_SCRIPT_SHORTCUTS validate --preset release-unix-x64

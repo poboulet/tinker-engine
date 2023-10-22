@@ -3,31 +3,41 @@
 
 set -e
 
-BUILD_PATH="./build/release"
 SOURCE_DIR="."
-EXCLUDED_DIRS=('build' 'vcpkg_installed' 'deploy' 'CMakeFiles')
+EXCLUDED_DIRS=('build' 'vcpkg_installed' 'deploy' 'CMakeFiles' 'vcpkg')
 
-while getopts "p:s:e:" opt; do
-    case "$opt" in
-    p)
-        BUILD_PATH="$OPTARG"
+while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+    --preset | -p)
+        PRESET="$2"
+        shift
         ;;
-    s)
-        SOURCE_DIR="$OPTARG"
+    --coverage | -c)
+        COVERAGE="ON"
+        shift
         ;;
-    e)
-        IFS=',' read -ra ADDR <<<"$OPTARG"
-        EXCLUDED_DIRS=()
-        for dir in "${ADDR[@]}"; do
-            EXCLUDED_DIRS+=("$dir")
-        done
+    --help | -h)
+        echo "Usage: $0 [build_type] [options]"
+        echo "Presets:"
+        echo "  debug-unix-x64       Build in debug mode for Unix x64."
+        echo "  release-unix-x64     Build in release mode for Unix x64."
+        echo "  debug-windows-x64    Build in debug mode for Windows x64."
+        echo "  release-windows-x64  Build in release mode for Windows x64."
+        echo "Options:"
+        echo "  --coverage, -c       Run tests with coverage."
+        echo "  --help, -h           Display this help message."
+        exit 0
         ;;
-    \?)
-        echo "Usage: $0 [-p build_path] [-s source_directory] [-e excluded_dirs_comma_separated]"
-        exit 1
+    *)
+        shift
         ;;
     esac
 done
+
+if [[ -z "$PRESET" ]]; then
+    echo "Error: Please specify a build preset."
+    exit 1
+fi
 
 # Build the find exclusion arguments based on EXCLUDED_DIRS
 FIND_EXCLUSIONS=""
@@ -38,4 +48,4 @@ done
 echo "Running clang-tidy on files in $SOURCE_DIR"
 
 echo $FIND_EXCLUSIONS
-eval "find \"$SOURCE_DIR\" \( -name '*.cpp' -o -name '*.cc' -o -name '*.cxx' -o -name '*.c++' \) $FIND_EXCLUSIONS" | xargs clang-tidy -p "$BUILD_PATH"
+eval "find \"$SOURCE_DIR\" \( -name '*.cpp' -o -name '*.cc' -o -name '*.cxx' -o -name '*.c++' \) $FIND_EXCLUSIONS" | xargs clang-tidy -p "./build/$PRESET"
