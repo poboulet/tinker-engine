@@ -9,7 +9,13 @@ defaults:
     shell: bash
 
 jobs:
-  build-and-deploy:
+  build:
+    uses: ./.github/workflows/build-workflow.yml
+    with:
+      reuse: true
+
+  deploy:
+    needs: build
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
@@ -24,54 +30,56 @@ jobs:
     container:
       image: ${{ matrix.image }}
     steps:
-      - uses: actions/checkout@v3
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
         with:
-          submodules: recursive
+          name: build-output-${{ github.run_id }}-${{ matrix.os }}
+          path: deploy/
 
-      - name: Build on Ubuntu
-        if: matrix.os == 'ubuntu-latest'
-        env:
-          PROJECT_SCRIPT_SHORTCUTS: ${{ github.workspace }}/bin/tinker
-        uses: ./.github/actions/build-action/linux
-
-      - name: Build on macOS
-        if: matrix.os == 'macos-latest'
-        env:
-          PROJECT_SCRIPT_SHORTCUTS: ${{ github.workspace }}/bin/tinker
-        uses: ./.github/actions/build-action/macos
-        with:
-          brewDeps: ${{ matrix.brewDeps }}
-
-      - name: Build on Windows
+      - name: Setup Dependencies on Windows
         if: matrix.os == 'windows-latest'
-        env:
-          PROJECT_SCRIPT_SHORTCUTS: ${{ github.workspace }}\bin\tinker
-        uses: ./.github/actions/build-action/windows
-        with:
-          chocoDeps: ${{ matrix.chocoDeps }}
+        run: |
+          choco install zip
 
-      - name: Deploy on Ubuntu
-        if: matrix.os == 'ubuntu-latest'
-        env:
-          PROJECT_SCRIPT_SHORTCUTS: ${{ github.workspace }}/bin/tinker
-        uses: ./.github/actions/deploy-action
-        with:
-          os: ${{ matrix.os }}
-          deployCoreLibrary: true
+      - name: Make Editor Executable (macOS and Linux)
+        if: matrix.os != 'windows-latest' && inputs.reuse == true
+        run: |
+          pushd  $GITHUB_WORKSPACE/deploy/editor/bin
+          chmod +x deploy/editor/bin/TinkerEngine.Editor
 
-      - name: Deploy on macOS
-        if: matrix.os == 'macos-latest'
-        env:
-          PROJECT_SCRIPT_SHORTCUTS: ${{ github.workspace }}/bin/tinker
-        uses: ./.github/actions/deploy-action
-        with:
-          os: ${{ matrix.os }}
+      - name: Zip Library
+        if: runner.os == 'Linux'
+        run: |
+          pushd deploy/core
+          zip -r tinker-core-lib.zip *
+          popd
 
-      - name: Deploy on Windows
-        if: matrix.os == 'windows-latest'
-        env:
-          PROJECT_SCRIPT_SHORTCUTS: ${{ github.workspace }}\bin\tinker
-        uses: ./.github/actions/deploy-action
+      - name: Deploy Library
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@v3
         with:
-          os: ${{ matrix.os }}
-          buildFolder: "release-windows-x64"
+          name: tinker-core-lib
+          path: deploy/core/tinker-core-lib.zip
+
+      - name: Zip Engine
+        run: |
+          pushd  $GITHUB_WORKSPACE/deploy/editor/bin
+          zip -r tinker-engine-${{ matrix.os }}.zip *
+          popd
+
+      - name: Deploy Engine
+        uses: actions/upload-artifact@v3
+        with:
+          name: tinker-engine-${{ matrix.os }}
+          path: deploy/editor/bin/tinker-engine-${{ matrix.os }}.zip
+
+  cleanup:
+    needs: deploy
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: geekyeggo/delete-artifact@v2
+        with:
+          name: build-output-${{ github.run_id }}-${{ matrix.os }}

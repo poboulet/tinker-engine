@@ -1,16 +1,25 @@
 name: Build
 
 on:
-  push:
-    branches-ignore:
-      - "main"
+  workflow_call:
+    inputs:
+      reuse:
+        required: false
+        type: boolean
+        default: false
   pull_request:
     branches:
+      - "*"
+  push:
+    branches-ignore:
       - main
 
 defaults:
   run:
     shell: bash
+
+env:
+  PROJECT_SCRIPT_SHORTCUTS: ${{ github.workspace }}/bin/tinker
 
 jobs:
   build:
@@ -19,38 +28,69 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
         include:
           - os: ubuntu-latest
-            image: ghcr.io/pobie/ubuntu-vulkan-cpp-dev:latest
+            container_image: ghcr.io/pobie/ubuntu-vulkan-cpp-dev:latest
+            preset: release-unix-x64
           - os: macos-latest
-            brewDeps: "ninja llvm cppcheck"
+            preset: release-unix-x64
           - os: windows-latest
-            chocoDeps: "ninja cppcheck"
+            preset: release-windows-x64
 
     runs-on: ${{ matrix.os }}
     container:
-      image: ${{ matrix.image }}
+      image: ${{ matrix.container_image }}
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: recursive
 
-      - name: Build on Ubuntu
-        if: matrix.os == 'ubuntu-latest'
-        env:
-          PROJECT_SCRIPT_SHORTCUTS: ${{ github.workspace }}/bin/tinker
-        uses: ./.github/actions/build-action/linux
-
-      - name: Build on macOS
+      - name: Setup Dependencies on macOS
         if: matrix.os == 'macos-latest'
-        env:
-          PROJECT_SCRIPT_SHORTCUTS: ${{ github.workspace }}/bin/tinker
-        uses: ./.github/actions/build-action/macos
-        with:
-          brewDeps: ${{ matrix.brewDeps }}
+        run: brew install ninja llvm cppcheck
 
-      - name: Build on Windows
+      - name: Setup Dependencies on Windows
         if: matrix.os == 'windows-latest'
-        env:
-          PROJECT_SCRIPT_SHORTCUTS: ${{ github.workspace }}\bin\tinker
-        uses: ./.github/actions/build-action/windows
+        run: |
+          choco install ninja cppcheck --no-progress -y --ignore-package-exit-codes --ignore-detected-reboot
+          echo "/c/Program Files/Cppcheck" >> $GITHUB_PATH
+
+      - name: Initialize and Bootstrap vcpkg
+        run: ./vcpkg/bootstrap-vcpkg.sh
+
+      - name: Set Paths for macOS
+        if: matrix.os == 'macos-latest'
+        run: |
+          echo "PATH=$(brew --prefix cppcheck)/bin:$PATH" >> "$GITHUB_ENV"
+          echo "PATH=$(brew --prefix llvm)/bin:$PATH" >> "$GITHUB_ENV"
+
+      - name: Set Paths for Windows
+        if: matrix.os == 'windows-latest'
+        run: |
+          echo "PATH=C:\Program Files (x86)\Cppcheck\bin;$PATH" >> "$env:GITHUB_PATH"
+          echo "PATH=C:\Program Files\LLVM\bin;$PATH" >> "$env:GITHUB_PATH"
+
+      - name: Set reusable strings
+        run: echo "DISTRIBUTION_DIR=$GITHUB_WORKSPACE/deploy" >> "$GITHUB_ENV"
+
+      - name: Build
+        run: $PROJECT_SCRIPT_SHORTCUTS build --preset ${{ matrix.preset }} --tests
+
+      - name: Lint
+        run: $PROJECT_SCRIPT_SHORTCUTS lint --preset ${{ matrix.preset }}
+
+      - name: Test
+        run: $PROJECT_SCRIPT_SHORTCUTS test --preset ${{ matrix.preset }}
+
+      - name: Validate
+        run: $PROJECT_SCRIPT_SHORTCUTS validate --preset ${{ matrix.preset }}
+
+      - name: Install for deployment
+        if: inputs.reuse == true
+        run: cmake --install build/${{ matrix.preset }} --prefix $DISTRIBUTION_DIR
+
+      - name: Upload build artifacts
+        if: inputs.reuse == true
+        uses: actions/upload-artifact@v3
         with:
-          chocoDeps: ${{ matrix.chocoDeps }}
+          name: build-output-${{ github.run_id }}-${{ matrix.os }}
+          path: deploy/
+          retention-days: 1
