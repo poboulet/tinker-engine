@@ -1,0 +1,102 @@
+name: Build
+
+on:
+  workflow_call:
+    inputs:
+      reuse:
+        required: false
+        type: boolean
+        default: false
+  pull_request:
+    branches:
+      - "*"
+  push:
+    branches-ignore:
+      - main
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  PROJECT_SCRIPT_SHORTCUTS: ${{ github.workspace }}/bin/tinker
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            container_image: ghcr.io/pobie/ubuntu-vulkan-cpp-dev:latest
+            preset: release-unix-x64
+          - os: macos-latest
+            preset: release-unix-x64
+          - os: windows-latest
+            preset: release-windows-x64
+
+    runs-on: ${{ matrix.os }}
+    container:
+      image: ${{ matrix.container_image }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Cache Homebrew packages
+        if: matrix.os == 'macos-latest'
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/Library/Caches/Homebrew
+            /usr/local/Homebrew/Library/Taps/homebrew/homebrew-core
+          key: ${{ runner.os }}-homebrew-${{ hashFiles('**/.brew') }}
+          restore-keys: |
+            ${{ runner.os }}-homebrew-
+
+      - name: Setup Dependencies on macOS
+        if: matrix.os == 'macos-latest'
+        run: |
+          cat .brew | xargs brew install
+
+      - name: Setup Dependencies on Windows
+        if: matrix.os == 'windows-latest'
+        run: |
+          pkg_list=$(cat .choco | tr '\r\n' ' '| tr '\n' ' ')
+          echo "Installing the following packages: $pkg_list"
+          choco install $pkg_list --no-progress -y --ignore-package-exit-codes --ignore-detected-reboot
+          echo "C:\Program Files\Cppcheck" >> $GITHUB_PATH
+
+      - name: Initialize and Bootstrap vcpkg
+        run: ./vcpkg/bootstrap-vcpkg.sh
+
+      - name: Set Paths for macOS
+        if: matrix.os == 'macos-latest'
+        run: |
+          echo "PATH=$(brew --prefix cppcheck)/bin:$PATH" >> "$GITHUB_ENV"
+          echo "PATH=$(brew --prefix llvm)/bin:$PATH" >> "$GITHUB_ENV"
+
+      - name: Set reusable strings
+        run: echo "DISTRIBUTION_DIR=$GITHUB_WORKSPACE/deploy" >> "$GITHUB_ENV"
+
+      - name: Build
+        run: |
+          cmake --preset ${{ matrix.preset }} -DBUILD_TESTS=ON -DCOVERAGE=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+          cmake --build --preset ${{ matrix.preset }}
+
+      - name: Test
+        run: |
+          ctest --preset ${{ matrix.preset }}
+          ls -a .
+
+      - name: Install for deployment
+        if: inputs.reuse == true
+        run: cmake --install build/${{ matrix.preset }} --prefix $DISTRIBUTION_DIR
+
+      - name: Upload build artifacts
+        if: inputs.reuse == true
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-output-${{ github.run_id }}-${{ matrix.os }}
+          path: deploy/
+          retention-days: 1
