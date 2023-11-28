@@ -10,7 +10,7 @@ defaults:
 
 jobs:
   build:
-    uses: ./.github/workflows/build-workflow.yml
+    uses: ./.github/workflows/build.yml
     with:
       reuse: true
 
@@ -23,9 +23,7 @@ jobs:
           - os: ubuntu-latest
             image: ghcr.io/pobie/ubuntu-vulkan-cpp-dev:latest
           - os: macos-latest
-            brewDeps: "ninja llvm cppcheck"
           - os: windows-latest
-            chocoDeps: "ninja cppcheck zip"
     runs-on: ${{ matrix.os }}
     container:
       image: ${{ matrix.image }}
@@ -35,11 +33,6 @@ jobs:
         with:
           name: build-output-${{ github.run_id }}-${{ matrix.os }}
           path: deploy/
-
-      - name: Setup Dependencies on Windows
-        if: matrix.os == 'windows-latest'
-        run: |
-          choco install zip
 
       - name: Make Editor Executable (macOS and Linux)
         if: matrix.os != 'windows-latest' && inputs.reuse == true

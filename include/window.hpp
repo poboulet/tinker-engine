@@ -1,15 +1,17 @@
 #pragma once
 
-namespace core
+#include <cstdint>
+
+namespace editor
 {
     class Window
     {
        public:
-        Window() = default;
-        virtual ~Window() = default;
+        virtual auto ShouldClose() -> bool = 0;
+        virtual auto PollEvents() -> void = 0;
 
        protected:
-        const uint32_t WIDTH = 800;
-        const uint32_t HEIGHT = 600;
+        const int WIDTH = 800;
+        const int HEIGHT = 600;
     };
-}  // namespace core
+};  // namespace editor

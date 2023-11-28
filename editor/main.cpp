@@ -1,7 +1,15 @@
 #include <iostream>
 
+#include "glfw_window.hpp"
+
 auto main() -> int
 {
-    std::cout << "Editor running." << std::endl;
+    editor::GLFWWindow window;
+
+    while (!window.ShouldClose())
+    {
+        window.PollEvents();
+    }
+
     return 0;
 }
