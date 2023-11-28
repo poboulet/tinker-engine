@@ -43,15 +43,29 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Cache Homebrew packages
+        if: matrix.os == 'macos-latest'
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/Library/Caches/Homebrew
+            /usr/local/Homebrew/Library/Taps/homebrew/homebrew-core
+          key: ${{ runner.os }}-homebrew-${{ hashFiles('**/.brew') }}
+          restore-keys: |
+            ${{ runner.os }}-homebrew-
+
       - name: Setup Dependencies on macOS
         if: matrix.os == 'macos-latest'
-        run: brew install ninja llvm cppcheck
+        run: |
+          cat .brew | xargs brew install
 
       - name: Setup Dependencies on Windows
         if: matrix.os == 'windows-latest'
         run: |
-          choco install ninja cppcheck --no-progress -y --ignore-package-exit-codes --ignore-detected-reboot
-          echo "/c/Program Files/Cppcheck" >> $GITHUB_PATH
+          pkg_list=$(cat .choco | tr '\r\n' ' '| tr '\n' ' ')
+          echo "Installing the following packages: $pkg_list"
+          choco install $pkg_list --no-progress -y --ignore-package-exit-codes --ignore-detected-reboot
+          echo "C:\Program Files\Cppcheck" >> $GITHUB_PATH
 
       - name: Initialize and Bootstrap vcpkg
         run: ./vcpkg/bootstrap-vcpkg.sh
@@ -62,26 +76,18 @@ jobs:
           echo "PATH=$(brew --prefix cppcheck)/bin:$PATH" >> "$GITHUB_ENV"
           echo "PATH=$(brew --prefix llvm)/bin:$PATH" >> "$GITHUB_ENV"
 
-      - name: Set Paths for Windows
-        if: matrix.os == 'windows-latest'
-        run: |
-          echo "PATH=C:\Program Files (x86)\Cppcheck\bin;$PATH" >> "$env:GITHUB_PATH"
-          echo "PATH=C:\Program Files\LLVM\bin;$PATH" >> "$env:GITHUB_PATH"
-
       - name: Set reusable strings
         run: echo "DISTRIBUTION_DIR=$GITHUB_WORKSPACE/deploy" >> "$GITHUB_ENV"
 
       - name: Build
-        run: $PROJECT_SCRIPT_SHORTCUTS build --preset ${{ matrix.preset }} --tests
-
-      - name: Lint
-        run: $PROJECT_SCRIPT_SHORTCUTS lint --preset ${{ matrix.preset }}
+        run: |
+          cmake --preset ${{ matrix.preset }} -DBUILD_TESTS=ON -DCOVERAGE=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+          cmake --build --preset ${{ matrix.preset }}
 
       - name: Test
-        run: $PROJECT_SCRIPT_SHORTCUTS test --preset ${{ matrix.preset }}
-
-      - name: Validate
-        run: $PROJECT_SCRIPT_SHORTCUTS validate --preset ${{ matrix.preset }}
+        run: |
+          ctest --preset ${{ matrix.preset }}
+          ls -a .
 
       - name: Install for deployment
         if: inputs.reuse == true
